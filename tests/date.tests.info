@@ -10,12 +10,6 @@ description = Test date field settings and Start/End date interaction
 group = Date
 file = date_field.test
 
-[DateMigrateExampleUnitTest]
-name = Date Migration
-description = Test migration into date fields
-group = Date
-file = date_migrate.test
-
 [DateTimezoneTestCase]
 name = Date Timezone & Granularity
 description = Test combinations of date field timezone handling and granularity
