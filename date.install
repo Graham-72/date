@@ -9,82 +9,99 @@
  * Implements hook_field_schema().
  */
 function date_field_schema($field) {
-  $db_columns = array();
+
   switch ($field['type']) {
+
     case 'datestamp':
-      $db_columns['value'] = array(
+      $columns = array(
+	    'value' => array(
         'type' => 'int',
         'not null' => FALSE,
         'sortable' => TRUE,
         'views' => TRUE,
+		),
       );
       break;
 
     case 'datetime':
-      $db_columns['value'] = array(
+      $columns = array(
+	    'value' => array(
         'type' => 'datetime',
-        'mysql_type' => 'datetime',
+        'mysql_type' => 'DATETIME',
         'pgsql_type' => 'timestamp without time zone',
         'sqlite_type' => 'varchar',
         'sqlsrv_type' => 'smalldatetime',
         'not null' => FALSE,
         'sortable' => TRUE,
         'views' => TRUE,
+		),
       );
       break;
 
     default:
-      $db_columns['value'] = array(
+      $columns = array(
+	    'value' => array(
         'type' => 'varchar',
         'length' => 20,
         'not null' => FALSE,
         'sortable' => TRUE,
         'views' => TRUE,
+		),
       );
       break;
   }
 
   // If a second date is needed for 'End date', make a copy of the first one.
   if (!empty($field['settings']['todate'])) {
-    $db_columns['value2'] = $db_columns['value'];
+    $columns['value2'] = $columns['value'];
 
     // We don't want Field API to create additional columns, just the first.
     // We modify them our own way in views data.
-    $db_columns['value2']['views'] = FALSE;
+    $columns['value2']['views'] = FALSE;
   }
   // Timezone and offset columns are used only if date-specific dates are used.
   if (isset($field['settings']['tz_handling']) && $field['settings']['tz_handling'] == 'date') {
-    $db_columns['timezone'] = array(
+    $columns = array(
+	  'timezone' => array(
       'type' => 'varchar',
       'length' => 50,
       'not null' => FALSE,
       'sortable' => TRUE,
       'views' => FALSE,
+	  ),
     );
-    $db_columns['offset'] = array(
+    $columns = array(
+	  'offset' => array(
       'type' => 'int',
       'not null' => FALSE,
       'sortable' => TRUE,
       'views' => FALSE,
+	  ),
     );
     if (!empty($field['settings']['todate'])) {
-      $db_columns['offset2'] = array(
+      $columns = array(
+	    'offset2' => array(
         'type' => 'int',
         'not null' => FALSE,
         'sortable' => TRUE,
-        'views' => FALSE
+          'views' => FALSE,
+	    ),
       );
     }
   }
   if (isset($field['settings']['repeat']) && $field['settings']['repeat'] == 1) {
-    $db_columns['rrule'] = array(
+    $columns = array(
+	  'rrule' => array(
       'type' => 'text',
       'not null' => FALSE,
       'sortable' => FALSE,
       'views' => FALSE,
+	  ),
     );
   }
-  return array('columns' => $db_columns);
+  return array(
+    'columns' => $columns,
+  );
 }
 
 /**
@@ -123,16 +140,22 @@ function date_update_7000() {
 }
 
 /**
- * Get rid of the separate widgets for repeating dates.
- *
- * The code now handles repeating dates correctly using the regular widgets.
+ * Move date settings from variables to config.
  */
-function date_update_7001() {
-  $query = db_select('field_config_instance', 'fci', array('fetch' => PDO::FETCH_ASSOC));
-  $query->join('field_config', 'fc', 'fc.id = fci.field_id');
-  $query->fields('fci');
-  $query->condition(db_or()->condition('fc.type', 'date')->condition('fc.type', 'datestamp')->condition('fc.type', 'datetime'));
-  $results = $query->execute();
+function date_update_1000() {
+  // Migrate selected variables to config.
+  // Use Backdrop core for date formats (system.date.settings)
+  // Also use settings in date_api.settings.json
+  $config = config('date.settings');
+  $config->set('_show_repeat_rule', update_variable_get('_show_repeat_rule', 'show'));
+  $config->set('_multiple_number', update_variable_get('_multiple_number', ''));
+  $config->set('_multiple_from', update_variable_get('_multiple_from', ''));
+  $config->set('_multiple_to', update_variable_get('_multiple_to', ''));
+  $config->set('_fromto', update_variable_get('_fromto', ''));
+  $config->set('install_task', update_variable_get('install_task', ''));
+  $config->set('date_popup_timepicker', update_variable_get('date_popup_timepicker', '$preferred_timepicker'));
+  $config->set('teaser_length', update_variable_get('teaser_length', '600'));
+  $config->save();
 
   foreach ($results as $record) {
     $instance = unserialize($record['data']);
@@ -157,50 +180,8 @@ function date_update_7001() {
 }
 
 /**
- * Add a notification about the new Date All Day module, and enable it.
+ * Implements hook_update_last_removed().
  */
-function date_update_7002() {
-  drupal_set_message(t("The <em>All Day</em> functionality has been moved into a separate module. This new module provides the option to add an <em>All Day</em> checkbox to toggle time on and off for date fields. It also contains the theme that displays the <em>All Day</em> text on fields that have no time. For consistency with prior code, it has been automatically enabled. If you don't want the <em>All Day</em> functionality you can disable this module."));
-  module_enable(array('date_all_day'));
-}
-
-/**
- * Adds a notification about the new Date Repeat Field module, and enable it.
- */
-function date_update_7003() {
-  drupal_set_message(t("The <em>Date Repeat</em> integration for Date fields is being moved into a separate module. For consistency with prior code, it has been automatically enabled if the Date Repeat API module is enabled. If you don't use <em>Date Repeat</em> functionality in your fields, you can disable this module."));
-  if (module_exists('date_repeat')) {
-    module_enable(array('date_repeat_field'));
-  }
-}
-
-/**
- * Date text widgets should always use an increment of 1.
- */
-function date_update_7004() {
-
-  // Select date fields.
-  $query = db_select('field_config_instance', 'fci', array('fetch' => PDO::FETCH_ASSOC));
-  $query->join('field_config', 'fc', 'fc.id = fci.field_id');
-  $query->fields('fci');
-  $query->condition(db_or()->condition('fc.type', 'date')->condition('fc.type', 'datestamp')->condition('fc.type', 'datetime'));
-  $results = $query->execute();
-
-  // Find the ones that use the date_text widget.
-  foreach ($results as $record) {
-    $instance = unserialize($record['data']);
-    if (in_array($instance['widget']['type'], array('date_text'))) {
-      $instance['widget']['settings']['increment'] = 1;
-      db_update('field_config_instance')
-        ->fields(array(
-          'data' => serialize($instance),
-        ))
-        ->condition('field_name', $record['field_name'])
-        ->condition('entity_type', $record['entity_type'])
-        ->condition('bundle', $record['bundle'])
-        ->execute();
-    }
-  }
-  field_cache_clear();
-  drupal_set_message(t('Date text widgets have been updated to use an increment of 1.'));
+function date_update_last_removed() {
+  return 7004;
 }

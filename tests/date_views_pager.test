@@ -2,32 +2,21 @@
 
 /**
  * @file
- * Views date pager test.
+ * Views date pager skipping test.
  */
 
-class ViewsPagerTestCase extends DrupalWebTestCase {
-  /**
-   * Test info.
-   */
-  public static function getInfo() {
-    return array(
-      'name' => 'Date views pager skipping test',
-      'description' => "Views date pager, option to skip empty pages test",
-      'group' => 'Date',
-    );
-  }
-
+class DateViewsPagerSkippingTestCase extends BackdropWebTestCase {
   /**
    * Test setup actions.
    */
   public function setUp() {
-    // Load the 'date_views', 'views', 'views_ui', 'ctools' modules.
-    parent::setUp('date_views', 'views', 'views_ui', 'ctools');
+    // Load the 'date_views', 'views', 'views_ui' modules.
+    parent::setUp('date_views', 'views', 'views_ui');
     // Set required permissions.
     $permissions = array('administer views', 'administer site configuration');
     // Create admin user and login.
-    $admin_user = $this->drupalCreateUser($permissions);
-    $this->drupalLogin($admin_user);
+    $admin_user = $this->backdropCreateUser($permissions);
+    $this->backdropLogin($admin_user);
 
     // Create a new view for test.
     $view = new view();

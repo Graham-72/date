@@ -94,7 +94,7 @@ function date_interval_formatter_settings_form($field, $instance, $view_mode, $f
     '#title' => t('Interval'),
     '#description' => t("How many time units should be shown in the 'time ago' string."),
     '#type' => 'select',
-    '#options' => drupal_map_assoc(range(1, 6)),
+    '#options' => backdrop_map_assoc(range(1, 6)),
     '#default_value' => $settings['interval'],
     '#weight' => 0,
   );
@@ -265,7 +265,7 @@ function _date_field_instance_settings_form($field, $instance) {
     'field' => $field,
     'instance' => $instance,
   );
-  drupal_alter('date_field_instance_settings_form', $form, $context);
+  backdrop_alter('date_field_instance_settings_form', $form, $context);
 
   return $form;
 }
@@ -304,17 +304,25 @@ function _date_field_widget_settings_form($field, $instance) {
   );
 
   $options = array();
-  if ($widget['type'] == 'date_popup' && module_exists('date_popup')) {
-    $formats = date_popup_formats();
+  $formats = system_get_date_formats();
+  $formats2 = array();
+  foreach ($formats as $entry) {
+    // Example input formats should show all possible date parts
+    // so add seconds if not already included with minutes
+    if (strpos($entry['pattern'],'i:s')){
+      $formats2[$entry['name']] = $entry['pattern'];
   }
   else {
-    // Example input formats must show all possible date parts, so add seconds.
-    $formats = str_replace('i', 'i:s', array_keys(system_get_date_formats('short')));
-    $formats = drupal_map_assoc($formats);
+      $formats2[$entry['name']] = str_replace('i', 'i:s', $entry['pattern']);
   }
   $now = date_example_date();
   foreach ($formats as $f) {
     $options[$f] = date_format_date($now, 'custom', $f);
+  }
+
+  $now = date_now();
+  foreach ($formats2 as $f) {
+    $options[$f] = date_format_date($now, 'custom', $f).' - - - [ '.$f.' ]';
   }
   $form['input_format'] = array(
     '#type' => 'select',
@@ -450,7 +458,7 @@ function _date_field_widget_settings_form($field, $instance) {
     'field' => $field,
     'instance' => $instance,
   );
-  drupal_alter('date_field_widget_settings_form', $form, $context);
+  backdrop_alter('date_field_widget_settings_form', $form, $context);
 
   return $form;
 }
@@ -547,7 +555,7 @@ function _date_field_settings_form($field, $instance, $has_data) {
     '#options' => date_timezone_handling_options(),
     '#description' => $description,
     '#attached' => array(
-      'js' => array(drupal_get_path('module', 'date') . '/date_admin.js'),
+      'js' => array(backdrop_get_path('module', 'date') . '/date_admin.js'),
     ),
   );
   // Force this value to hidden because we don't want to allow it to be changed
@@ -585,7 +593,7 @@ function _date_field_settings_form($field, $instance, $has_data) {
     'instance' => $instance,
     'has_data' => $has_data,
   );
-  drupal_alter('date_field_settings_form', $form, $context);
+  backdrop_alter('date_field_settings_form', $form, $context);
 
   return $form;
 }
