@@ -1,13 +1,21 @@
 <h1>About Date Basic for BackdropCMS</h1>
 -------------------------
 
-This module provides both a flexible date/time field type Date field and a Date API that other modules can use. 
+This module provides flexible date/time field types in Backdrop and a Date API that other modules can use. 
 
-It is a subset of the Drupal Date module, ported to Backdrop, containing the modules likely to be incorporated
-in core in Backdrop release 1.2
+In its current version, forked from Drupal's Date module, it provides for three types of date field: a Unix timestamp stored as an integer; an ISO format date stored as a text field; and a basic date stored as a MySQL datetime field.
+
+Additionally it provides three different ways for a user to input a date: a text field using one of many PHP date-time formats; a drop-down select list for day, month and year; and a javascript pop-up calendar for day, month and year.
+
+The module includes the possibility of a date-time pair, defining the start and finish times for an event.
+
+An included Date Views module provides integration with Views.
+
+Nevertheless, the Date Basic module is a subset of the Drupal Date module, containing the modules likely to be incorporated in core in Backdrop release 1.2. It may well be appropriate to omit some more of these options.
 
 <h2>Status</h2>
-This port to Backdrop is under test.
+
+This port to Backdrop now passes most of its inbuilt tests but there are still some problems to be solved.
 
 
 <h2>Help & Documentation</h2>
