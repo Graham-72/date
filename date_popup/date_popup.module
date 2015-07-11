@@ -54,8 +54,8 @@ function date_popup_get_wvega_path() {
       $path = FALSE;
     }
   }
-  elseif (file_exists('sites/all/libraries/wvega-timepicker/jquery.timepicker.js')) {
-    $path = 'sites/all/libraries/wvega-timepicker';
+  elseif (file_exists('libraries/wvega-timepicker/jquery.timepicker.js')) {
+    $path = 'libraries/wvega-timepicker';
   }
   return $path;
 }
@@ -828,6 +828,7 @@ function date_popup_settings() {
     '#type' => 'select',
     '#options' => array(
       'default' => t('Use default jQuery timepicker'),
+	  'wvega' => t('Use dropdown timepicker'),
       'none'    => t('Manual time entry, no jQuery timepicker'),
     ),
     '#title' => t('Timepicker'),

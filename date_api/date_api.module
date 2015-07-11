@@ -2256,12 +2256,13 @@ function date_part_format($part, $format) {
  *   The format string with all other elements removed.
  */
 function date_limit_format($format, $granularity) {
-  // Use the advanced drupal_static() pattern to improve performance.
-  static $drupal_static_fast;
-  if (!isset($drupal_static_fast)) {
-    $drupal_static_fast['formats'] = &drupal_static(__FUNCTION__);
+  // Use the advanced backdrop_static() pattern to improve performance.
+
+  static $backdrop_static_fast;
+  if (!isset($backdrop_static_fast)) {
+    $backdrop_static_fast['formats'] = &backdrop_static(__FUNCTION__);
   }
-  $formats = &$drupal_static_fast['formats'];
+  $formats = &$backdrop_static_fast['formats'];
   $format_granularity_cid = $format . '|' . implode(',', $granularity);
   if (isset($formats[$format_granularity_cid])) {
     return $formats[$format_granularity_cid];
@@ -2729,10 +2730,12 @@ function date_api_form_system_settings_validate(&$form, &$form_state) {
  */
 function date_format_type_options() {
   $options = array();
-  $format_types = system_get_date_types();
+  $format_types = system_get_date_formats();
   if (!empty($format_types)) {
     foreach ($format_types as $type => $type_info) {
-      $options[$type] = $type_info['title'] . ' (' . date_format_date(date_example_date(), $type) . ')';
+      if (isset($type_info['label'])) {
+         $options[$type] = $type_info['label'] . ' (' . date_format_date(date_example_date(), $type) . ')';
+	  }
     }
   }
   return $options;

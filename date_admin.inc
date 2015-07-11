@@ -309,17 +309,12 @@ function _date_field_widget_settings_form($field, $instance) {
   foreach ($formats as $entry) {
     // Example input formats should show all possible date parts
     // so add seconds if not already included with minutes
-    if (strpos($entry['pattern'],'i:s')){
+    if (strpos($entry['pattern'], 'i:s')) {
       $formats2[$entry['name']] = $entry['pattern'];
-  }
-  else {
+    } else {
       $formats2[$entry['name']] = str_replace('i', 'i:s', $entry['pattern']);
+    }
   }
-  $now = date_example_date();
-  foreach ($formats as $f) {
-    $options[$f] = date_format_date($now, 'custom', $f);
-  }
-
   $now = date_now();
   foreach ($formats2 as $f) {
     $options[$f] = date_format_date($now, 'custom', $f).' - - - [ '.$f.' ]';
@@ -659,3 +654,4 @@ function date_timezone_handling_options() {
     'none' => t('No time zone conversion'),
   );
 }
+

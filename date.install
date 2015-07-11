@@ -9,134 +9,78 @@
  * Implements hook_field_schema().
  */
 function date_field_schema($field) {
-
+  $db_columns = array();
   switch ($field['type']) {
-
     case 'datestamp':
-      $columns = array(
-	    'value' => array(
+      $db_columns['value'] = array(
         'type' => 'int',
         'not null' => FALSE,
         'sortable' => TRUE,
         'views' => TRUE,
-		),
       );
       break;
 
     case 'datetime':
-      $columns = array(
-	    'value' => array(
+      $db_columns['value'] = array(
         'type' => 'datetime',
-        'mysql_type' => 'DATETIME',
-        'pgsql_type' => 'timestamp without time zone',
-        'sqlite_type' => 'varchar',
-        'sqlsrv_type' => 'smalldatetime',
+        'mysql_type' => 'datetime',
         'not null' => FALSE,
         'sortable' => TRUE,
         'views' => TRUE,
-		),
       );
       break;
 
     default:
-      $columns = array(
-	    'value' => array(
+      $db_columns['value'] = array(
         'type' => 'varchar',
         'length' => 20,
         'not null' => FALSE,
         'sortable' => TRUE,
         'views' => TRUE,
-		),
       );
       break;
   }
 
   // If a second date is needed for 'End date', make a copy of the first one.
   if (!empty($field['settings']['todate'])) {
-    $columns['value2'] = $columns['value'];
+    $db_columns['value2'] = $db_columns['value'];
 
     // We don't want Field API to create additional columns, just the first.
     // We modify them our own way in views data.
-    $columns['value2']['views'] = FALSE;
+    $db_columns['value2']['views'] = FALSE;
   }
   // Timezone and offset columns are used only if date-specific dates are used.
   if (isset($field['settings']['tz_handling']) && $field['settings']['tz_handling'] == 'date') {
-    $columns = array(
-	  'timezone' => array(
+    $db_columns['timezone'] = array(
       'type' => 'varchar',
       'length' => 50,
       'not null' => FALSE,
       'sortable' => TRUE,
       'views' => FALSE,
-	  ),
     );
-    $columns = array(
-	  'offset' => array(
+    $db_columns['offset'] = array(
       'type' => 'int',
       'not null' => FALSE,
       'sortable' => TRUE,
       'views' => FALSE,
-	  ),
     );
     if (!empty($field['settings']['todate'])) {
-      $columns = array(
-	    'offset2' => array(
+      $db_columns['offset2'] = array(
         'type' => 'int',
         'not null' => FALSE,
         'sortable' => TRUE,
-          'views' => FALSE,
-	    ),
-      );
+	    'views' => FALSE);
     }
   }
   if (isset($field['settings']['repeat']) && $field['settings']['repeat'] == 1) {
-    $columns = array(
-	  'rrule' => array(
+    $db_columns['rrule'] = array(
       'type' => 'text',
       'not null' => FALSE,
       'sortable' => FALSE,
       'views' => FALSE,
-	  ),
     );
   }
-  return array(
-    'columns' => $columns,
-  );
-}
-
-/**
- * Implements hook_update_last_removed().
- */
-function date_update_last_removed() {
-  return 6005;
-}
-
-/**
- * Get rid of the individual formatters for each format type.
- *
- * These are now settings in the default formatter.
- */
-function date_update_7000() {
-  $instances = field_info_instances();
-  foreach ($instances as $entity_type => $entities) {
-    foreach ($entities as $bundle => $fields) {
-      foreach ($fields as $field_name => $instance) {
-        if (in_array($instance['widget']['type'], array('date_popup'))) {
-          $changed = FALSE;
-          foreach ($instance['display'] as $context => $display) {
-            if ($display['type'] != 'date_default' && $display['type'] != 'date_interval' && $display['type'] != 'hidden') {
-              $instance['display'][$context]['type'] = 'date_default';
-              $instance['display'][$context]['settings']['format_type'] = str_replace('date_', '', $display['type']);
-              $changed = TRUE;
-            }
-          }
-          if ($changed) {
-            field_update_instance($instance);
-          }
-        }
-      }
-    }
-  }
+  return array('columns' => $db_columns);
 }
 
 /**
@@ -157,26 +101,15 @@ function date_update_1000() {
   $config->set('teaser_length', update_variable_get('teaser_length', '600'));
   $config->save();
 
-  foreach ($results as $record) {
-    $instance = unserialize($record['data']);
-    if (in_array($instance['widget']['type'], array(
-        'date_popup_repeat',
-        'date_text_repeat',
-        'date_select_repeat'
-      ))) {
-      $instance['widget']['type'] = str_replace('_repeat', '', $instance['widget']['type']);
-      db_update('field_config_instance')
-        ->fields(array(
-          'data' => serialize($instance),
-        ))
-        ->condition('field_name', $record['field_name'])
-        ->condition('entity_type', $record['entity_type'])
-        ->condition('bundle', $record['bundle'])
-        ->execute();
-    }
-  }
-  field_cache_clear();
-  drupal_set_message(t('The widgets for repeating dates have changed. Please check the Display Fields page for each content type that has repeating date fields and confirm that the right widget has been selected.'), 'warning');
+  // Delete variables.
+  update_variable_del('_show_repeat_rule');
+  update_variable_del('_multiple_number');
+  update_variable_del('_multiple_from');
+  update_variable_del('_multiple_to');
+  update_variable_del('_fromto');
+  update_variable_del('install_task');
+  update_variable_del('date_popup_timepicker');
+  update_variable_del('teaser_length');
 }
 
 /**

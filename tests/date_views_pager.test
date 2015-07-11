@@ -84,15 +84,15 @@ class DateViewsPagerSkippingTestCase extends BackdropWebTestCase {
    */
   public function testPagerSkipping() {
     // Go to view admin page.
-    $this->drupalGet('admin/structure/views/view/display/test_date_pager/edit');
+    $this->backdropGet('admin/structure/views/view/display/test_date_pager/edit');
     // Go to pager options.
-    $this->drupalGet('admin/structure/views/nojs/display/test_date_pager/default/pager_options');
+    $this->backdropGet('admin/structure/views/nojs/display/test_date_pager/default/pager_options');
     // Check if "Skip empty pages" text - exist.
     $this->assertText('Skip empty pages');
     // Check if field and it's value is correct.
     $this->assertFieldByName('pager_options[skip_empty_pages]', '1');
     // Go back to view admin page.
-    $this->drupalGet('admin/structure/views/view/display/test_date_pager/edit');
+    $this->backdropGet('admin/structure/views/view/display/test_date_pager/edit');
     // Check if pager on empty page are gone.
     $this->assertNoText('« Prev', 'Previous pager does not exist');
     $this->assertNoText('Next »', 'Next pager does not exist');
@@ -102,17 +102,17 @@ class DateViewsPagerSkippingTestCase extends BackdropWebTestCase {
    * Test the view page has no PHP warnings.
    */
   public function testPagerWarning() {
-    $this->drupalCreateNode(array('type' => 'blog'));
+    $this->backdropCreateNode(array('type' => 'blog'));
     // Set pager to skip empty pages.
     $edit = array(
       'pager_options[skip_empty_pages]' => FALSE,
     );
-    $this->drupalPost('admin/structure/views/nojs/display/test_date_pager/default/pager_options', $edit, t('Apply'));
+    $this->backdropPost('admin/structure/views/nojs/display/test_date_pager/default/pager_options', $edit, t('Apply'));
     // Save the view.
-    $this->drupalPost('admin/structure/views/view/test_date_pager/edit', array(), t('Save'));
+    $this->backdropPost('admin/structure/views/view/test_date_pager/edit', array(), t('Save'));
 
     // Visit view page. This will throw error, if any PHP warnings or errors.
-    $this->drupalGet('test_date_pager');
+    $this->backdropGet('test_date_pager');
   }
 
 }
