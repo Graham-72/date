@@ -580,7 +580,7 @@ function date_parts_element($element, $date, $format) {
 
         $sub_element[$field]['#default_value'] = is_object($date) ? $date->format('Y') : '';
         if ($part_type == 'select') {
-          $sub_element[$field]['#options'] = backdrop_map_assoc(date_years($min_year, $max_year, $part_required));
+          $sub_element[$field]['#options'] = backdrop_map_assoc(date_years($start_year, $end_year, $part_required));
         }
         break;
 
