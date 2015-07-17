@@ -102,7 +102,7 @@ function date_tools_page() {
  */
 function date_tools_autoload_info()
 {
-    return array(
-        'DateToolsTestCase' => 'tests/date_tools.test'
-    );
+  return array(
+    'DateToolsTestCase' => 'tests/date_tools.test'
+  );
 }
