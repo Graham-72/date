@@ -1,5 +1,7 @@
-<h1>About Date Basic for BackdropCMS</h1>
+<h1>About Date Basic for Backdrop</h1>
 -------------------------
+
+Backdrop v1.2 has included the functionality of this module in core and does not require this contributed module.
 
 This module provides flexible date/time field types in Backdrop and a Date API that other modules can use. 
 
@@ -11,11 +13,13 @@ The module includes the possibility of a date-time pair, defining the start and 
 
 An included Date Views module provides integration with Views.
 
-Nevertheless, the Date Basic module is a subset of the Drupal Date module, containing the modules likely to be incorporated in core in Backdrop release 1.2. It may well be appropriate to omit some more of these options.
+Remaining functions not in Date Basic nor in core v1.2 are being made available in contributed modules date_all_day, date_tools and date_repeat. Please see these modules for more details
+
+
 
 <h2>Status</h2>
 
-This port to Backdrop now passes most of its inbuilt tests but there are still some problems to be solved.
+This port to Backdrop now passes most of its inbuilt tests but there are still some residual problems.
 
 
 <h2>Help & Documentation</h2>
